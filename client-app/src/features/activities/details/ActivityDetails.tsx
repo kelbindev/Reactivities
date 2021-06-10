@@ -1,13 +1,23 @@
-import React from 'react'
+import { observer } from 'mobx-react-lite';
+import React, { useEffect } from 'react'
+import { useParams } from 'react-router';
 import { Button, Card, Image } from 'semantic-ui-react'
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import { useStore } from '../../../app/stores/store';
+import { Link } from 'react-router-dom';
 
-export default function ActivityDetails() {
+export default observer(function ActivityDetails() {
     const { activityStore } = useStore();
-    const {selectedActivity: activity,clearSelectedActivity, openForm} = activityStore
+    const { selectedActivity: activity, loadActivity, loadingInitial } = activityStore
+    const { id } = useParams<{ id: string }>();
 
-    if (!activity) return <LoadingComponent/>;
+    useEffect(() => {
+        if (id) { 
+            loadActivity(id) 
+        };
+    }, [id, loadActivity]);
+
+    if (loadingInitial || !activity) return <LoadingComponent />;
 
     return (
         <Card fluid>
@@ -18,15 +28,15 @@ export default function ActivityDetails() {
                     <span>{activity.date}</span>
                 </Card.Meta>
                 <Card.Description>
-                   {activity.description}
-      </Card.Description>
+                    {activity.description}
+                </Card.Description>
             </Card.Content>
             <Card.Content extra>
-              <Button.Group widths='2'>
-                    <Button basic color='blue' content='Edit'  onClick={()=>openForm(activity.id)} />
-                    <Button basic color='grey' content='Cancel' onClick={clearSelectedActivity}/>
-              </Button.Group>
+                <Button.Group widths='2'>
+                    <Button basic color='blue' content='Edit' as={Link} to={`/manage/${activity.id}`} />
+                    <Button basic color='grey' content='Cancel' as={Link} to={'/activities'} />
+                </Button.Group>
             </Card.Content>
         </Card>
     )
-}
+})
