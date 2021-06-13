@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Header, Segment } from "semantic-ui-react";
 import axios from 'axios';
 import { useState } from 'react';
-import ValidationError from '../../features/errors/ValidationError'
+import ValidationError from './ValidationError'
 
 export default function TestErrors() {
     const baseUrl = 'https://localhost:5001/api/'
@@ -25,7 +25,13 @@ export default function TestErrors() {
     }
 
     function handleBadGuid() {
-        axios.get(baseUrl + 'activities/notaguid').catch(err => console.log(err));
+        console.log("bad guid clicked");
+        axios.get(baseUrl + 'activities/notaguid').catch(err => 
+            {
+                console.log("bad guid processed");
+                console.log(err)
+            }
+            );
     }
 
     function handleValidationError() {

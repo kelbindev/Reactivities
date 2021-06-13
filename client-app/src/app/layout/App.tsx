@@ -8,7 +8,7 @@ import HomePage from '../../features/home/HomePage'
 import ActivityForm from '../../features/activities/form/ActivityForm';
 import ActivityDetails from '../../features/activities/details/ActivityDetails';
 import { ToastContainer } from 'react-toastify';
-import TestError from './TestError'
+import TestError from '../../features/errors/TestError'
 import NotFound from '../../features/errors/NotFound';
 import ServerError from '../../features/errors/ServerError';
 

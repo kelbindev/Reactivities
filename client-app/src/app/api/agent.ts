@@ -27,6 +27,7 @@ axios.interceptors.response.use(
         return response;
     }, (error: AxiosError) => {
         const { data, status, config } = error.response!;
+        console.log("axios intercepts");
         switch (status) {
             case 400:
                 if (typeof data === 'string'){
