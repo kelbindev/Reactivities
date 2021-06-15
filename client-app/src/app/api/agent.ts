@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { history } from '../..';
 import { Activity } from '../models/activity';
 import { store } from '../stores/store';
+import {User,UserFormValues} from '../models/user'
 
 axios.defaults.baseURL = "https://localhost:5001/api";
 
@@ -10,8 +11,8 @@ const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
 const request = {
     get: <T>(url: string) => axios.get<T>(url).then(responseBody),
-    post: <T>(url: string, body: {}) => axios.post<T>(url).then(responseBody),
-    put: <T>(url: string, body: {}) => axios.put<T>(url).then(responseBody),
+    post: <T>(url: string, body: {}) => axios.post<T>(url,body).then(responseBody),
+    put: <T>(url: string, body: {}) => axios.put<T>(url,body).then(responseBody),
     del: <T>(url: string) => axios.delete<T>(url).then(responseBody),
 }
 
@@ -21,13 +22,19 @@ const sleep = (delay: number) => {
     })
 }
 
+axios.interceptors.request.use(config => {
+    const token = store.commonStore.token;
+    if (token) config.headers.Authorization = `Bearer ${token}`
+    return config;
+})
+
 axios.interceptors.response.use(
     async response => {
         await sleep(1000);
         return response;
     }, (error: AxiosError) => {
         const { data, status, config } = error.response!;
-        console.log("axios intercepts");
+        console.log('axios intercepts');
         switch (status) {
             case 400:
                 if (typeof data === 'string'){
@@ -74,8 +81,15 @@ const Activities = {
     delete: (id: string) => request.del<void>(`/activities/${id}`),
 }
 
+const Account = {
+    current: () => request.get<User>("/account"),
+    login: (user: UserFormValues) => request.post<User>('/account/login',user),
+    register: (user: UserFormValues) => request.post<User>('/account/register',user)
+}
+
 const agent = {
-    Activities
+    Activities,
+    Account
 }
 
 export default agent;

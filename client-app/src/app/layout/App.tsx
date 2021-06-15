@@ -11,13 +11,27 @@ import { ToastContainer } from 'react-toastify';
 import TestError from '../../features/errors/TestError'
 import NotFound from '../../features/errors/NotFound';
 import ServerError from '../../features/errors/ServerError';
+import LoginForm from '../../features/users/LoginForm';
+import { useStore } from '../stores/store';
+import { useEffect } from 'react';
+import LoadingComponent from './LoadingComponent';
+import ModalContainer from '../common/modals/ModalContainer'
 
 function App() {
-  var location = useLocation();
+  const location = useLocation();
+  const  {commonStore, userStore} = useStore();
+
+  useEffect(() => {
+    commonStore.token ? userStore.getCurrentUser().finally(commonStore.setAppLoaded)
+    : commonStore.setAppLoaded();
+  },[commonStore,userStore]);
+
+  if (!commonStore.appLoaded) return <LoadingComponent content='Loading Activities' />
 
   return (
     <Fragment>
       <ToastContainer position='bottom-right' hideProgressBar />
+      <ModalContainer />
       <Route exact path='/' component={HomePage} />
       <Route
         path={'/(.+)'}
@@ -26,6 +40,7 @@ function App() {
             <NavBar />
             <Container style={{ marginTop: '7em' }}>
               <Switch>
+              <Route path='/login' component={LoginForm} />
                 <Route exact path='/activities' component={ActivityDashboard} />
                 <Route path='/activities/:id' component={ActivityDetails} />
                 <Route path='/testerror' component={TestError} />

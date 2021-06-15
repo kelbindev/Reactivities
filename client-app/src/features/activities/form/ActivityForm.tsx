@@ -13,12 +13,11 @@ import MyDateInput from '../../../app/common/MyDateInput'
 
 import {CategoryOptions} from '../../../app/common/options/CategoryOptions'
 import { Activity } from '../../../app/models/activity'
-import { dir } from 'console'
 
 export default observer(function ActivityForm() {
     const history = useHistory()
     const { activityStore } = useStore()
-    const { createActivity, updateActivity, isSubmitting, loadActivity, loadingInitial } = activityStore
+    const { createActivity, updateActivity, loadActivity, loadingInitial } = activityStore
     const { id } = useParams<{ id: string }>();
 
     const [activity, setActivity] = useState<Activity>({

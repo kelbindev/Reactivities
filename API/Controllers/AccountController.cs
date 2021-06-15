@@ -1,3 +1,4 @@
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
@@ -27,9 +28,10 @@ namespace API.Controllers
             this.tokenService = tokenService;
         }
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<ActionResult<UserDTO>> Login(LoginDTO loginDTO)
         {
+            Console.WriteLine(loginDTO);
             var user = await userManager.FindByEmailAsync(loginDTO.Email);
 
             if (user == null) { return Unauthorized(); }
@@ -49,13 +51,15 @@ namespace API.Controllers
         {
             if (await userManager.Users.AnyAsync(x => x.Email == RegisterDTO.Email))
             {
-                return BadRequest("Email Taken");
+                ModelState.AddModelError("email","Email Taken");
             }
 
             if (await userManager.Users.AnyAsync(x => x.UserName == RegisterDTO.Username))
             {
-                return BadRequest("Username Taken");
+                ModelState.AddModelError("username","Username Taken");
             }
+
+            if(ModelState.ErrorCount > 0) return ValidationProblem();
 
             var user = new AppUser
             {
@@ -73,7 +77,7 @@ namespace API.Controllers
 
             return BadRequest("Problem Registering User");
         }
-        [Authorize]
+
         [HttpGet]
         public async Task<ActionResult<UserDTO>> GetCurrentUser()
         {
