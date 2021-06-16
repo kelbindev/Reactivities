@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace API.Controllers
 {
-    [AllowAnonymous]
     public class ActivitiesController : BaseApiController
     {
         [HttpGet]
@@ -38,7 +37,7 @@ namespace API.Controllers
                 }
             ));
         }
-
+        [Authorize(Policy = "isActivityHost")]
         [HttpPut("{id}")]
         public async Task<IActionResult> editActivity(Guid id, Activity activity)
         {
@@ -51,7 +50,7 @@ namespace API.Controllers
                 }
             ));
         }
-
+        [Authorize(Policy = "isActivityHost")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> deleteActivity(Guid id)
         {
@@ -59,6 +58,12 @@ namespace API.Controllers
             {
                 id = id
             }));
+        }
+
+        [HttpPost("{id}/attend")]
+        public async Task<IActionResult> Attend(Guid id)
+        {
+            return HandleResult(await Mediator.Send(new UpdateAttendace.Command{Id=id}));
         }
     }
 }

@@ -3,8 +3,10 @@ using API.Services;
 using Application.Activities;
 using Application.Core;
 using Domain;
+using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,6 +41,13 @@ namespace API.Extension
 
                 };
             });
+
+            services.AddAuthorization(opt =>
+                opt.AddPolicy("isActivityHost", policy => {
+                    policy.Requirements.Add(new isHostRequirement());
+                })
+            );
+            services.AddTransient<IAuthorizationHandler, isHostRequirementHandler>();
             services.AddScoped<TokenService>();
 
             return services;
