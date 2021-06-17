@@ -1,8 +1,10 @@
 import { makeAutoObservable, runInAction, } from "mobx"
 import agent from "../api/agent";
-import { Activity } from "../models/activity"
+import { Activity, ActivityFormValues } from "../models/activity"
 import { v4 as uuid } from 'uuid'
 import { format } from 'date-fns'
+import { store } from "./store";
+import { Profile } from "../models/profile";
 
 export default class ActivityStore {
     activityRegistry = new Map<String, Activity>();
@@ -23,7 +25,7 @@ export default class ActivityStore {
     get groupedActivities() {
         return Object.entries(
             this.activities.reduce((_activities, _activity) => {
-                const date = format(_activity.date!,'dd MMM yyyy')
+                const date = format(_activity.date!, 'dd MMM yyyy')
                 _activities[date] = _activities[date] ? [..._activities[date], _activity] : [_activity]
                 return _activities
             }, {} as { [key: string]: Activity[] })
@@ -66,7 +68,7 @@ export default class ActivityStore {
         } else {
             this.loadingInitial = true;
             try {
-                activity = await (await agent.Activities.details(id)).data;
+                activity = await (await agent.Activities.details(id));
                 this.setActivity(activity);
                 runInAction(() => {
                     this.selectedActivity = activity;
@@ -87,38 +89,45 @@ export default class ActivityStore {
     }
 
     private setActivity(activity: Activity) {
+        var user = store.userStore.user;
+        if (user) {
+            activity.isGoing = activity.attendees?.some(x => x.username === user?.username)
+            activity.isHost = activity.hostUsername === user.username
+            activity.host = activity.attendees?.find(x => x.username === activity.hostUsername)
+        }
+
         activity.date = new Date(activity.date!)
         this.activityRegistry.set(activity.id, activity)
     }
 
-    createActivity = async (activity: Activity) => {
+    createActivity = async (activity: ActivityFormValues) => {
+        const user = store.userStore.user;
+        const attendee = new Profile(user!);
         try {
-            this.isSubmitting = true;
             activity.id = uuid()
             await agent.Activities.create(activity)
+            var newActivity = new Activity(activity)
+            newActivity.hostUsername = user?.username
+            newActivity.attendees = [attendee]
+            this.setActivity(newActivity)
             runInAction(() => {
-                // this.activities.push(activity);
-                this.activityRegistry.set(activity.id, activity)
-                this.isSubmitting = false;
-                this.setEditMode(false);
+                this.selectedActivity = newActivity
             })
         }
         catch (error) {
             console.log(error)
-            runInAction(() => {
-                this.isSubmitting = false;
-            })
         }
     }
 
-    updateActivity = async (activity: Activity) => {
+    updateActivity = async (activity: ActivityFormValues) => {
         try {
-            this.isSubmitting = true;
             await agent.Activities.update(activity)
             runInAction(() => {
-                this.activityRegistry.set(activity.id, activity)
-                this.isSubmitting = false;
-                this.setEditMode(false);
+                if (activity.id) {
+                    let updatedActivity = { ...this.getActivity(activity.id), ...activity }
+                    this.activityRegistry.set(activity.id, updatedActivity as Activity)
+                    this.selectedActivity = updatedActivity as Activity
+                }
             })
         }
         catch (error) {
@@ -144,6 +153,51 @@ export default class ActivityStore {
             runInAction(() => {
                 this.isSubmitting = false;
             })
+        }
+    }
+
+    updateAttendance = async () => {
+        var user = store.userStore.user;
+        this.isSubmitting = true
+
+        try {
+            await agent.Activities.attend(this.selectedActivity!.id)
+            runInAction(() => {
+                if (this.selectedActivity?.isGoing) {
+                    this.selectedActivity!.attendees =
+                        this.selectedActivity?.attendees?.filter(x => x.username !== user?.username)
+                    this.selectedActivity.isGoing = false;
+                }
+                else {
+                    const attendee = new Profile(user!)
+                    this.selectedActivity?.attendees?.push(attendee)
+                    this.selectedActivity!.isGoing = true;
+                }
+
+                this.activityRegistry.set(this.selectedActivity!.id, this.selectedActivity!)
+            })
+        } catch (error) {
+            console.log(error)
+        } finally {
+            this.isSubmitting = false
+        }
+
+    }
+
+    cancelActivityToggle = async () => {
+        this.isSubmitting = true;
+        try {
+            await agent.Activities.attend(this.selectedActivity!.id)
+            runInAction(() => {
+                this.selectedActivity!.isCancelled = !this.selectedActivity?.isCancelled
+                this.activityRegistry.set(this.selectedActivity!.id, this.selectedActivity!)
+            }
+            )
+        } catch (error) {
+
+        }
+        finally {
+            runInAction(() => this.isSubmitting = false)
         }
     }
 

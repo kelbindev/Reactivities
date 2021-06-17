@@ -12,7 +12,7 @@ import MySelectInput from '../../../app/common/MySelectInput'
 import MyDateInput from '../../../app/common/MyDateInput'
 
 import {CategoryOptions} from '../../../app/common/options/CategoryOptions'
-import { Activity } from '../../../app/models/activity'
+import { ActivityFormValues } from '../../../app/models/activity'
 
 export default observer(function ActivityForm() {
     const history = useHistory()
@@ -20,15 +20,7 @@ export default observer(function ActivityForm() {
     const { createActivity, updateActivity, loadActivity, loadingInitial } = activityStore
     const { id } = useParams<{ id: string }>();
 
-    const [activity, setActivity] = useState<Activity>({
-        id: '',
-        title: '',
-        category: '',
-        description: '',
-        date: null,
-        city: '',
-        venue: ''
-    });
+    const [activity, setActivity] = useState<ActivityFormValues>(new ActivityFormValues());
 
     const validationSchema = Yup.object({
         title: Yup.string().required('Activity title is required'),
@@ -43,13 +35,13 @@ export default observer(function ActivityForm() {
         if (id) {
             loadActivity(id).then(
                 (e) => {
-                    setActivity(e!)
+                    setActivity(new ActivityFormValues(e))
                 }
             )
         };
     }, [id, loadActivity]);
 
-    function handleFormSubmit(activity:Activity) {
+    function handleFormSubmit(activity:ActivityFormValues) {
         if(activity.id){
             updateActivity(activity).then(
                 () => history.push(`/activities/${activity.id}`)
