@@ -8,13 +8,17 @@ interface Props{
     profile: Profile
 }
 
+function truncate(str : string = '', n : number){
+    return (str.length > n) ? str.substr(0, n-1) + '...' : str;
+  };
+
 export default observer(function ProfileCard({profile}:Props){
     return(
         <Card as={Link} to={`profiles/${profile.username}`}>
             <Image src={profile.image || '/assets/user.png'} />
             <Card.Content>
                 <Card.Header>{profile.displayName}</Card.Header>
-                <Card.Description>Bio Goes Here</Card.Description>
+                <Card.Description>{truncate(profile.bio,30)}</Card.Description>
             </Card.Content>
             <Card.Content extra>
                 <Icon name='user'/>

@@ -25,7 +25,6 @@ export default class ProfileStore {
         this.loadingProfile = true;
         try {
             const profile = await agent.Profiles.get(username);
-            console.log(profile);
             this.profile = profile;
         }
         catch (error) {
@@ -99,6 +98,21 @@ export default class ProfileStore {
                 () => this.loading = false
             )
         }
+    }
+
+    updateAbout = async (profile: Profile) => {
+        try{
+            await agent.Profiles.updateAbout(profile)
+            runInAction(() => {
+                if (this.profile)
+                {
+                    this.profile.displayName = profile.displayName
+                    this.profile.bio = profile.bio
+                }
+            })
+        }catch (error){
+            console.log(error)
+        } 
     }
 
 

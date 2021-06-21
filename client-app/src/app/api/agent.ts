@@ -100,6 +100,7 @@ const Profiles = {
     },
     setMainPhoto: (id: string) => request.post(`/photo/${id}/setMain`,{}),
     deletePhoto: (id: string) => request.del(`/photo/${id}`),
+    updateAbout: (profile: Profile) => request.post<void>(`/profiles/updateAbout`,profile),
 }
 
 const agent = {
