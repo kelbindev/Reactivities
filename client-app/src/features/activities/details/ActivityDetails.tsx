@@ -11,12 +11,13 @@ import ActivityDetailChat from './ActivityDetailChat'
 
 export default observer(function ActivityDetails() {
     const { activityStore } = useStore();
-    const { selectedActivity: activity, loadActivity, loadingInitial } = activityStore
+    const { selectedActivity: activity, loadActivity, loadingInitial, clearSelectedActivity } = activityStore
     const { id } = useParams<{ id: string }>();
 
     useEffect(() => {
         if (id) { 
-            loadActivity(id) 
+            loadActivity(id);
+            return () => clearSelectedActivity();
         };
     }, [id, loadActivity]);
 
@@ -27,7 +28,7 @@ export default observer(function ActivityDetails() {
            <Grid.Column width={10}>
                 <ActivityDetailHeader activity={activity}/>
                 <ActivityDetailContent activity={activity}/>
-                <ActivityDetailChat />
+                <ActivityDetailChat activityId={activity.id} />
            </Grid.Column>
            <Grid.Column width={6}>
                 <ActivityDetailSidebar activity={activity} />
