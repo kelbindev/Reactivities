@@ -2,9 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -22,8 +22,10 @@ namespace Application.Activities
         {
             private readonly DataContext context;
             private readonly IMapper mapper;
+            private readonly IUserAccesor userAccesor;
             public Handler(DataContext context, IMapper mapper)
             {
+                
                 this.mapper = mapper;
                 this.context = context;
             }
@@ -32,7 +34,7 @@ namespace Application.Activities
             {
                 var activity = await context.Activities
                 .ProjectTo<ActivityDTO>(mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync(x=>x.Id == request.Id);
+                .FirstOrDefaultAsync(x => x.Id == request.Id);
 
                 return APIResult<ActivityDTO>.Sucess(activity);
             }

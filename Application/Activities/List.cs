@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain;
@@ -18,9 +19,12 @@ namespace Application.Activities
         {
             private readonly DataContext _context;
             private readonly IMapper mapper;
-            public Handler(DataContext context, IMapper mapper)
+            private readonly IUserAccesor userAccesor;
+
+            public Handler(DataContext context, IMapper mapper, IUserAccesor userAccesor)
             {
                 this.mapper = mapper;
+                this.userAccesor = userAccesor;
                 _context = context;
             }
 
@@ -28,7 +32,7 @@ namespace Application.Activities
             {
                 var activities =
                 await _context.Activities
-                .ProjectTo<ActivityDTO>(mapper.ConfigurationProvider)
+                .ProjectTo<ActivityDTO>(mapper.ConfigurationProvider, new {currentUsername = userAccesor.GetUsername()})
                 .ToListAsync(cancellationToken);
 
                 return APIResult<List<ActivityDTO>>.Sucess(activities);

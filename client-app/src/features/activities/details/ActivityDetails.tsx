@@ -19,7 +19,7 @@ export default observer(function ActivityDetails() {
             loadActivity(id);
             return () => clearSelectedActivity();
         };
-    }, [id, loadActivity]);
+    }, [id, loadActivity,clearSelectedActivity]);
 
     if (loadingInitial || !activity) return <LoadingComponent />;
 
