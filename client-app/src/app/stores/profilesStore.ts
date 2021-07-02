@@ -2,6 +2,7 @@ import { Photo, Profile } from '../models/profile';
 import { makeAutoObservable, reaction, runInAction } from 'mobx'
 import agent from "../api/agent";
 import { store } from './store';
+import { ProfileActivity } from '../models/profileActivity';
 
 export default class ProfileStore {
     profile: Profile | null = null
@@ -9,8 +10,11 @@ export default class ProfileStore {
     uploading = false;
     loading = false;
     followings: Profile[] = [];
+    activities: ProfileActivity[] = [];
     loadingFollowing: boolean = false;
     activeTab:number = 0;
+
+    activeEventTab:number = 0;
 
     constructor() {
         makeAutoObservable(this);
@@ -22,15 +26,57 @@ export default class ProfileStore {
                     const predicate = at === 3 ? 'followers' : 'following'
                     this.loadFollowings(predicate);
                 }
+                else if (at === 2) {
+                    this.clearProfileActivities();
+                    var predicate = "";
+                    switch (at.toString()){
+                        case "0":
+                           predicate = 'future';
+                            break;
+                        case "1":
+                            predicate = 'past';
+                            break;
+                        case "2":
+                            predicate = 'isHost';
+                            break;
+                    }
+
+                    this.loadProfileEvents(predicate);
+                }
                 else {
                     this.clearFollowings();
                 }
+            }
+        );
+
+        reaction(
+            () => this.activeEventTab,
+            at => {
+                var predicate = "";
+                this.clearProfileActivities();
+                switch (at.toString()){
+                    case "0":
+                       predicate = 'future';
+                        break;
+                    case "1":
+                        predicate = 'past';
+                        break;
+                    case "2":
+                        predicate = 'isHost';
+                        break;
+                }
+
+                this.loadProfileEvents(predicate)
             }
         )
     }
 
     setActiveTab = (tabIndex:any) => {
         this.activeTab = tabIndex;
+    }
+
+    setActiveEventTab = (tabIndex:any) => {
+        this.activeEventTab = tabIndex;
     }
 
     get isCurrentUser() {
@@ -182,6 +228,30 @@ export default class ProfileStore {
 
     clearFollowings = () => {
         this.followings = []
+    }
+
+    clearProfileActivities = () => {
+        this.activities = []
+    }
+
+    loadProfileEvents = async (predicate:string) => {
+        this.loadingFollowing = true;
+
+        try {
+            const activities = await agent.Profiles.getProfileActivities(this.profile!.username, predicate);
+            console.log(activities);
+            runInAction(() => {
+                this.activities = activities;
+
+            });
+        } catch (error) {
+            console.log(error)
+        }
+        finally {
+            runInAction(() => {
+                this.loadingFollowing = false;
+            })
+        }
     }
 
 
