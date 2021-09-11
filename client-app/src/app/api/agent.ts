@@ -19,12 +19,6 @@ const request = {
     del: <T>(url: string) => axios.delete<T>(url).then(responseBody),
 }
 
-// const sleep = (delay: number) => {
-//     return new Promise((e) => {
-//         setTimeout(e, delay);
-//     })
-// }
-
 axios.interceptors.request.use(config => {
     const token = store.commonStore.token;
     if (token) config.headers.Authorization = `Bearer ${token}`

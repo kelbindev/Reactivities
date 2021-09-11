@@ -24,12 +24,11 @@ namespace API.Extension
         {
             services.AddIdentityCore<AppUser>(opt => {
                 opt.Password.RequireNonAlphanumeric = false;
-
             })
             .AddEntityFrameworkStores<DataContext>()
             .AddSignInManager<SignInManager<AppUser>>();
 
-             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt => {
@@ -39,7 +38,6 @@ namespace API.Extension
                     IssuerSigningKey = key,
                     ValidateIssuer = false,
                     ValidateAudience = false
-
                 };
                 //for signalr
                 opt.Events = new JwtBearerEvents 

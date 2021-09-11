@@ -14,7 +14,7 @@ export default observer(function RegisterForm() {
         <Formik
             initialValues={{ displayName: '', username: '', email: '', password: '', error: null }}
             onSubmit={(values, { setErrors, setSubmitting }) => {
-                userStore.register(values)
+               userStore.register(values)
                     .catch((error) => 
                     {
                     setErrors({ error })}
@@ -38,10 +38,9 @@ export default observer(function RegisterForm() {
                     <ErrorMessage
                         name='error' render={() =>
                             <ValidationError errors={errors.error} />
-                            // <Label style={{ marginBottom: 10 }} basic color='red' content={errors.error} />
                         }
                     />
-                    <Button loading={isSubmitting} disabled={!isValid || !dirty || isSubmitting} positive content='Register' type='submit' fluid />
+                    <Button loading={isSubmitting} disabled={!isValid || !dirty || isSubmitting} content='Register' type='submit' fluid />
                 </Form>
             )}
         </Formik>
